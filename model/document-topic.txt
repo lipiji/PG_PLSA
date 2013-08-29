@@ -1,0 +1,26 @@
+Document #0:
+topic25 topic15 topic16 topic14 topic13 topic22 topic19 topic11 topic7 topic8 
+Document #1:
+topic2 topic22 topic27 topic3 topic16 topic7 topic17 topic26 topic28 topic12 
+Document #2:
+topic3 topic23 topic6 topic12 topic14 topic0 topic10 topic4 topic2 topic22 
+Document #3:
+topic5 topic29 topic21 topic11 topic0 topic8 topic17 topic22 topic19 topic6 
+Document #4:
+topic1 topic11 topic6 topic2 topic23 topic12 topic10 topic19 topic26 topic28 
+Document #5:
+topic9 topic22 topic6 topic12 topic10 topic15 topic16 topic26 topic21 topic24 
+Document #6:
+topic27 topic5 topic0 topic9 topic11 topic19 topic4 topic14 topic10 topic25 
+Document #7:
+topic8 topic18 topic26 topic27 topic4 topic21 topic14 topic9 topic11 topic19 
+Document #8:
+topic20 topic18 topic28 topic27 topic25 topic15 topic24 topic3 topic11 topic19 
+Document #9:
+topic17 topic7 topic29 topic16 topic8 topic14 topic2 topic19 topic0 topic26 
+Document #10:
+topic4 topic16 topic17 topic9 topic18 topic14 topic7 topic6 topic5 topic0 
+Document #11:
+topic4 topic21 topic20 topic28 topic17 topic24 topic26 topic14 topic13 topic1 
+Document #12:
+topic13 topic24 topic27 topic18 topic10 topic19 topic29 topic7 topic15 topic8 

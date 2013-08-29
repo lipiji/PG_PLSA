@@ -1,0 +1,11 @@
+Some called in the "King of Pop" others called him less favorable titles, but many have followed Michael Jackson's capers over the years.  In death, as in life he proved colorful and larger than life.  When Mr. Jackson passed away at age 50, the news shook the internet world.
+
+Within hours of the story breaking millions had flooded online reading the news.  The LA Times recorded 2.3 million page views in just one hour -- more than many sites have in a month.  The incredible traffic strain acted like a denial of service attack, overloading ABC, AOL, LA Times, CNN Money, and CBS servers and leading to longer load times, or, for some users, timeouts.
+
+AOL spokespeople commented that they had "never seen anything like it in terms of scope or depth. Historically, celebrity news prompts a worldwide outpouring with several key consumer behaviors -- searching, sharing and reacting to the news followed by online tributes has become the modern way to mourn"
+
+AOL's Instant Messenger, scheduled for routine maintenance, struggled under the traffic, causing service outages.  Twitter, the popular micro-blogging service, saw its number of Tweets double almost instantly.  And market tracker service Akamai reports that overall internet news traffic temporarily spiked over 20 percent due to Mr. Jackson's death.
+
+Still other telltale signs greeted users.  On iTunes Michael Jackson's albums accompanied the top four spots on the iTunes 100 top albums sold.  Meanwhile, on internet encyclopedia Wikipedia users engaged in a war of edits that resulted in admins locking up the page until things cooled down.
+
+This kind of an occurence wouldn't seem like tech news; in fact its seems about as far removed from it as possible.  But his death proved to be one of the most impactful internet events of the year and offered a intriguing view of how web 2.0 takes on, processes, and deals with a traffic-driving event of unprecedented scale.
