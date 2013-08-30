@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 '''
 lipiji.sdu@gmail.com
@@ -11,18 +12,12 @@ import glob
 import re
 import numpy as np
 from random import random
-from operator import itemgetter # for sort
+from operator import itemgetter
 
 def normalize(vec):
     s = sum(vec)
     assert(abs(s) != 0.0) # the sum must not be 0
-    """
-    if abs(s) < 1e-6:
-        print "Sum of vectors sums almost to 0. Stop here."
-        print "Vec: " + str(vec) + " Sum: " + str(s)
-        assert(0) # assertion fails
-    """
-        
+    
     for i in range(len(vec)):
         assert(vec[i] >= 0) # element must be >= 0
         vec[i] = vec[i] * 1.0 / s
@@ -83,127 +78,131 @@ class Corpus(object):
                 discrete_set.add(word)
         self.vocabulary = list(discrete_set)
         
-    def plsa(self, number_of_topics, max_iter):
+		
+class Plsa(object):
+	def __init__(self, corpus, number_of_topics, max_iter, model_path):
+		self.n_d = len(corpus.documents)
+		self.n_w = len(corpus.vocabulary)
+		self.n_t = number_of_topics
+		self.max_iter = max_iter
+		self.model_path = model_path
+		self.L = 0.0 # log-likelihood
+		self.error_L = 0.0001; # error for each iter
+		self.corpus = corpus		
+		# bag of words
+		self.n_w_d = np.zeros([self.n_d, self.n_w], dtype = np.int)
+		for di, doc in enumerate(corpus.documents):
+			n_w_di = np.zeros([self.n_w], dtype = np.int)
+			for word in doc.words:
+				if word in corpus.vocabulary:
+					word_index = corpus.vocabulary.index(word)
+					n_w_di[word_index] = n_w_di[word_index] + 1
+			self.n_w_d[di] = n_w_di
 
-        '''
-        Model topics.
-        '''
-        # Get vocabulary and number of documents.
-        self.build_vocabulary()
-        number_of_documents = len(self.documents)
-        vocabulary_size = len(self.vocabulary)
+		# P(z|w,d)
+		self.p_z_dw = np.zeros([self.n_d, self.n_w, self.n_t], dtype = np.float)
+		# P(z|d)
+		self.p_z_d = np.random.random(size=[self.n_d, self.n_t])
+		for di in range(self.n_d):
+			normalize(self.p_z_d[di])
+		# P(w|z)
+		self.p_w_z = np.random.random(size = [self.n_t, self.n_w])
+		for zi in range(self.n_t):
+			normalize(self.p_w_z[zi])
 
-        print "Vocabulary size:" + str(vocabulary_size)
-        print "Number of documents:" + str(number_of_documents)
+	def log_likelihood(self):
+		L = 0
+		for di in range(self.n_d):
+			for wi in range(self.n_w):
+				sum1 = 0
+				for zi in range(self.n_t):
+					sum1 = sum1 + self.p_z_d[di, zi] * self.p_w_z[zi, wi]
+				L = L + self.n_w_d[di, wi] * np.log(sum1)
+		return L
 
-        print "EM iteration begins..."
-        # build term-doc matrix
-        term_doc_matrix = np.zeros([number_of_documents, vocabulary_size], dtype = np.int)
-        for d_index, doc in enumerate(self.documents):
-            term_count = np.zeros(vocabulary_size, dtype = np.int)
-            for word in doc.words:
-                if word in self.vocabulary:
-                    w_index = self.vocabulary.index(word)
-                    term_count[w_index] = term_count[w_index] + 1
-            term_doc_matrix[d_index] = term_count
 
-        # Create the counter arrays.
-        self.document_topic_prob = np.zeros([number_of_documents, number_of_topics], dtype=np.float) # P(z | d)
-        self.topic_word_prob = np.zeros([number_of_topics, len(self.vocabulary)], dtype=np.float) # P(w | z)
-        self.topic_prob = np.zeros([number_of_documents, len(self.vocabulary), number_of_topics], dtype=np.float) # P(z | d, w)
+	def print_p_z_d(self):
+		filename = self.model_path + "p_z_d.txt"
+		f = open(filename, "w")
+		for di in range(self.n_d):
+			f.write("Doc #" + str(di) +":")
+			for zi in range(self.n_t):
+				f.write(" "+self.p_z_d[di, zi])
+			f.write("\n")
+		f.close()
+	
+	def print_p_w_z(self):
+		filename = self.model_path + "p_w_z.txt"
+		f = open(filename, "w")
+		for zi in range(self.n_t):
+			f.write("Topic #" + str(zi) +":")
+			for wi in range(self.n_w):
+				f.write(" "+self.p_w_z[zi, wi])
+			f.write("\n")
+		f.close()
 
-        # Initialize
-        print "Initializing..."
-        # randomly assign values
-        self.document_topic_prob = np.random.random(size = (number_of_documents, number_of_topics))
-        for d_index in range(len(self.documents)):
-            normalize(self.document_topic_prob[d_index]) # normalize for each document
-        self.topic_word_prob = np.random.random(size = (number_of_topics, len(self.vocabulary)))
-        for z in range(number_of_topics):
-            normalize(self.topic_word_prob[z]) # normalize for each topic
+	def print_top_words(self, topk):
+		filename = self.model_path + "top_words.txt"
+		f = open(filename, "w")
+		for zi in range(self.n_t):
+			word_prob = self.p_w_z[zi,:]
+			word_index_prob = []
+			for wi in range(self.n_w):
+				word_index_prob.append([wi, word_prob[wi]])
+			word_index_prob = sorted(word_index_prob, key=itemgetter(1), reverse=True)
+			f.write("Topic #" + str(zi) + ":\n")
+			for wi in range(topk):
+				index = word_index_prob[wi][0]
+				f.write(self.corpus.vocabulary[index] + "\n")
+		f.close()
 
-        # Run the EM algorithm
-        for iteration in range(max_iter):
-            print "Iteration #" + str(iteration + 1) + "..."
-            print "E step:"
-            for d_index, document in enumerate(self.documents):
-                for w_index in range(vocabulary_size):
-                    prob = self.document_topic_prob[d_index, :] * self.topic_word_prob[:, w_index]
-                    if sum(prob) == 0.0:
-                        print "d_index = " + str(d_index) + ",  w_index = " + str(w_index)
-                        print "self.document_topic_prob[d_index, :] = " + str(self.document_topic_prob[d_index, :])
-                        print "self.topic_word_prob[:, w_index] = " + str(self.topic_word_prob[:, w_index])
-                        print "topic_prob[d_index][w_index] = " + str(prob)
-                        exit(0)
-                    else:
-                        normalize(prob)
-                    self.topic_prob[d_index][w_index] = prob
-            print "M step:"
-            # update P(w | z)
-            for z in range(number_of_topics):
-                for w_index in range(vocabulary_size):
-                    s = 0
-                    for d_index in range(len(self.documents)):
-                        count = term_doc_matrix[d_index][w_index]
-                        s = s + count * self.topic_prob[d_index, w_index, z]
-                    self.topic_word_prob[z][w_index] = s
-                normalize(self.topic_word_prob[z])
-            
-            # update P(z | d)
-            for d_index in range(len(self.documents)):
-                for z in range(number_of_topics):
-                    s = 0
-                    for w_index in range(vocabulary_size):
-                        count = term_doc_matrix[d_index][w_index]
-                        s = s + count * self.topic_prob[d_index, w_index, z]
-                    self.document_topic_prob[d_index][z] = s
-#                print self.document_topic_prob[d_index]
-#                assert(sum(self.document_topic_prob[d_index]) != 0)
-                normalize(self.document_topic_prob[d_index])
+	def train(self):
+		print "Training..."
+		for i_iter in range(self.max_iter):
 
-def print_topic_word_distribution(corpus, number_of_topics, topk, filepath):
-    """
-    Print topic-word distribution to file and list @topk most probable words for each topic
-    """
-    print "Writing topic-word distribution to file: " + filepath
-    V = len(corpus.vocabulary) # size of vocabulary
-    assert(topk < V)
-    f = open(filepath, "w")
-    for k in range(number_of_topics):
-        word_prob = corpus.topic_word_prob[k, :]
-        word_index_prob = []
-        for i in range(V):
-            word_index_prob.append([i, word_prob[i]])
-        word_index_prob = sorted(word_index_prob, key=itemgetter(1), reverse=True) # sort by word count
-        f.write("Topic #" + str(k) + ":\n")
-        for i in range(topk):
-            index = word_index_prob[i][0]
-            f.write(corpus.vocabulary[index] + " ")
-        f.write("\n")
-        
-    f.close()
-    
-def print_document_topic_distribution(corpus, number_of_topics, topk, filepath):
-    """
-    Print document-topic distribution to file and list @topk most probable topics for each document
-    """
-    print "Writing document-topic distribution to file: " + filepath
-    assert(topk < number_of_topics)
-    f = open(filepath, "w")
-    D = len(corpus.documents) # number of documents
-    for d in range(D):
-        topic_prob = corpus.document_topic_prob[d, :]
-        topic_index_prob = []
-        for i in range(number_of_topics):
-            topic_index_prob.append([i, topic_prob[i]])
-        topic_index_prob = sorted(topic_index_prob, key=itemgetter(1), reverse=True)
-        f.write("Document #" + str(d) + ":\n")
-        for i in range(topk):
-            index = topic_index_prob[i][0]
-            f.write("topic" + str(index) + " ")
-        f.write("\n")
-        
-    f.close()        
+			# likelihood
+			self.L = self.log_likelihood()
+			
+			self.print_top_words(10)
+			
+			print "Iter " + str(i_iter) + ", L=" + str(self.L)
+
+			print "E-Step..."
+			for di in range(self.n_d):
+				for wi in range(self.n_w):
+					sum_zk = np.zeros([self.n_t], dtype = float)
+					for zi in range(self.n_t):
+						sum_zk[zi] = self.p_z_d[di, zi] * self.p_w_z[zi, wi]
+					sum1 = np.sum(sum_zk)
+					if sum1 == 0:
+						sum1 = 1
+					for zi in range(self.n_t):
+						self.p_z_dw[di, wi, zi] = sum_zk[zi] / sum1
+
+			print "M-Step..."
+			# update P(z|d)
+			for di in range(self.n_d):
+				for zi in range(self.n_t):
+					sum1 = 0.0
+					sum2 = 0.0
+					for wi in range(self.n_w):
+						sum1 = sum1 + self.n_w_d[di, wi] * self.p_z_dw[di, wi, zi]
+						sum2 = sum2 + self.n_w_d[di, wi]
+					if sum2 == 0:
+						sum2 = 1
+					self.p_z_d[di, zi] = sum1 / sum2
+
+			# update P(w|z)
+			for zi in range(self.n_t):
+				sum2 = np.zeros([self.n_w], dtype = np.float)
+				for wi in range(self.n_w):
+					for di in range(self.n_d):
+						sum2[wi] = sum2[wi] + self.n_w_d[di, wi] * self.p_z_dw[di, wi, zi]
+				sum1 = np.sum(sum2)
+				if sum1 == 0:
+					sum1 = 1
+				for wi in range(self.n_w):
+					self.p_w_z[zi, wi] = sum2[wi] / sum1
 
 def main(argv):
     print "Usage: python ./plsa.py <number_of_topics> <maxiteration>"
@@ -223,16 +222,13 @@ def main(argv):
             document = Document(document_file)
             document.split(STOP_WORDS_DIC)
             corpus.add_document(document)
-    
+	corpus.build_vocabulary()
     
 
-    number_of_topics = 10 #int(argv[1])
-    max_iterations = 50 #int(argv[2])
-    corpus.plsa(number_of_topics, max_iterations)
-        
-
-    print_topic_word_distribution(corpus, number_of_topics, 10, "./model/topic-word.txt")
-    print_document_topic_distribution(corpus, number_of_topics, 10, "./model/document-topic.txt")
+    number_of_topics = 12 #int(argv[1])
+    max_iterations = 100 #int(argv[2])
+    plsa = Plsa(corpus, number_of_topics, max_iterations, "./model/")
+    plsa.train()   
 
 if __name__ == "__main__":
     main(sys.argv)
