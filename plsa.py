@@ -2,8 +2,13 @@
 # -*- coding: utf-8 -*-
 '''
 lipiji.sdu@gmail.com
+zhizhihu.com
+----------------------
+Bug exsit.
 
-original code from: https://github.com/hitalex/PLSA
+----------------------
+Reference:
+[1]https://github.com/hitalex/PLSA
 '''
 
 import sys
@@ -150,10 +155,11 @@ class Plsa(object):
 			for wi in range(self.n_w):
 				word_index_prob.append([wi, word_prob[wi]])
 			word_index_prob = sorted(word_index_prob, key=itemgetter(1), reverse=True)
-			f.write("Topic #" + str(zi) + ":\n")
+			f.write("-------------\n" + "Topic #" + str(zi) + ":\n")
 			for wi in range(topk):
 				index = word_index_prob[wi][0]
-				f.write(self.corpus.vocabulary[index] + "\n")
+				prob = word_index_prob[wi][1]
+				f.write(self.corpus.vocabulary[index] + " " + str(prob) + "\n")
 		f.close()
 
 	def train(self):
