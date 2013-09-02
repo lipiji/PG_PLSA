@@ -66,8 +66,8 @@ class Document(object):
 		for punc in Document.PUNCTUATION + Document.CARRIAGE_RETURNS:
 			word = word.replace(punc, '').strip("'")
 			# stemmer: dogs -> dog ; created -> creat
-			ps = stemmer.PorterStemmer()
-			word = ps.stem(word, 0, len(word)-1)
+			#ps = stemmer.PorterStemmer()
+			#word = ps.stem(word, 0, len(word)-1)
 		return word if re.match(Document.WORD_REGEX, word) else None
 
 #D
