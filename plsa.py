@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 '''
-lipiji.sdu@gmail.com
+pagelee.sd@gmail.com
 zhizhihu.com
 ----------------------
 Bug exsit.
