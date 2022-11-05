@@ -166,7 +166,7 @@ class Plsa(object):
 		f.close()
 
 	def train(self):
-		print "Training..."
+		print("Training...")
 		for i_iter in range(self.max_iter):
 
 			# likelihood
@@ -174,9 +174,9 @@ class Plsa(object):
 
 			self.print_top_words(10)
 
-			print "Iter " + str(i_iter) + ", L=" + str(self.L)
+			print("Iter " + str(i_iter) + ", L=" + str(self.L))
 
-			print "E-Step..."
+			print("E-Step...")
 			for di in range(self.n_d):
 				for wi in range(self.n_w):
 					sum_zk = np.zeros([self.n_t], dtype = float)
@@ -188,7 +188,7 @@ class Plsa(object):
 					for zi in range(self.n_t):
 						self.p_z_dw[di, wi, zi] = sum_zk[zi] / sum1
 
-			print "M-Step..."
+			print("M-Step...")
 			# update P(z|d)
 			for di in range(self.n_d):
 				for zi in range(self.n_t):
@@ -214,7 +214,7 @@ class Plsa(object):
 					self.p_w_z[zi, wi] = sum2[wi] / sum1
 
 def main(argv):
-	print "Usage: python ./plsa.py <number_of_topics> <maxiteration>"
+	print("Usage: python ./plsa.py <number_of_topics> <maxiteration>")
 
 	# load stop words
 	load_stop_words("./data/stopwords.txt")
